@@ -97,18 +97,15 @@ app.use("/api/v1/products", async (req, res) => {
   }
 
   const displayCursor = cursor.limit(limit).skip(limit * page);
-
+  var productsList = [];
+  var totalNumProducts = 0;
   try {
-    const productsList = await displayCursor.toArray();
-    const totalNumProducts = await products.countDocuments(query);
-
-    productsList, totalNumProducts;
+    productsList = await displayCursor.toArray();
+    totalNumProducts = await products.countDocuments(query);
   } catch (e) {
     console.error(
       `Unable to convert cursor to array or problem counting documents, ${e}`
     );
-    const productsList = [];
-    const totalNumProducts = 0;
   }
   console.log("hamza ");
   let response = {
