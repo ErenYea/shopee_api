@@ -92,7 +92,11 @@ app.use("/api/v1/products", async (req, res) => {
 app.use("*", (req, res) => res.status(404).json({ error: "Not Found" }));
 
 MongoClient.connect(
-  "mongodb+srv://duong:duongmongodb@cluster0.dn9bkly.mongodb.net/shopee_db?retryWrites=true&w=majority"
+  "mongodb+srv://duong:duongmongodb@cluster0.dn9bkly.mongodb.net/shopee_db?retryWrites=true&w=majority",
+  {
+    maxPoolSize: 50,
+    wtimeoutMS: 2500,
+  }
 )
   .catch((err) => {
     console.error(err.stack);
