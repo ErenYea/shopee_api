@@ -69,7 +69,7 @@ app.use(express.json());
 
 app.use("/api/v1/products", async (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : 100;
-
+  console.log("owais");
   const page = req.query.page ? parseInt(req.query.page, 10) : 0;
 
   let filters = {};
