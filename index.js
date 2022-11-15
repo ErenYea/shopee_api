@@ -80,13 +80,13 @@ app.use("/api/v1/products", async (req, res) => {
   } else if (req.query.brand) {
     filters.brand = req.query.brand;
   }
-
+  console.log("huzaifa noob");
   const { productsList, totalNumProducts } = await ProductsDAO.getProducts({
     filters,
     page,
     limit,
   });
-
+  console.log("hamza ");
   let response = {
     products: productsList,
     page: page,
