@@ -9,22 +9,7 @@ dotenv.config();
 const MongoClient = mongodb.MongoClient;
 let products;
 class ProductsDAO {
-  static async injectDB(conn) {
-    if (products) {
-      return;
-    }
-    try {
-      console.log("Before connection");
-      products = await conn
-        .db(process.env.RESTREVIEWS_NS)
-        .collection("product_data");
-      console.log("after connection");
-    } catch (error) {
-      console.error(
-        `Unable to estalish a collection handle in restaurantsDAO: ${error}`
-      );
-    }
-  }
+  static async injectDB(conn) {}
 
   static async getProducts({ filters = null, page = 0, limit = 100 } = {}) {
     let query;
@@ -85,11 +70,46 @@ app.use("/api/v1/products", async (req, res) => {
     filters.brand = req.query.brand;
   }
   console.log("huzaifa noob");
-  const { productsList, totalNumProducts } = await ProductsDAO.getProducts({
-    filters,
-    page,
-    limit,
-  });
+  // const { productsList, totalNumProducts } = await ProductsDAO.getProducts({
+  //   filters,
+  //   page,
+  //   limit,
+  // });
+  let query;
+  if (filters) {
+    if ("brand" in filters) {
+      query = { $text: { $search: filters["brand"] } };
+    } else if ("dest" in filters) {
+      query = { $text: { $search: `|${filters["dest"]}|` } };
+    } else if ("name" in filters) {
+      query = { $text: { $search: filters["name"] } };
+    }
+  }
+
+  let cursor;
+  try {
+    console.log("query", query);
+    cursor = await products.find(query);
+    console.log("cursor found");
+  } catch (e) {
+    console.error(`Unable to issue find command, ${e}`);
+    return { productsList: [], totalNumProducts: 0 };
+  }
+
+  const displayCursor = cursor.limit(limit).skip(limit * page);
+
+  try {
+    const productsList = await displayCursor.toArray();
+    const totalNumProducts = await products.countDocuments(query);
+
+    productsList, totalNumProducts;
+  } catch (e) {
+    console.error(
+      `Unable to convert cursor to array or problem counting documents, ${e}`
+    );
+    const productsList = [];
+    const totalNumProducts = 0;
+  }
   console.log("hamza ");
   let response = {
     products: productsList,
@@ -113,8 +133,21 @@ MongoClient.connect(process.env.RESTREVIEWS_DB_URI, {
     process.exit(1);
   })
   .then(async (client) => {
-    await ProductsDAO.injectDB(client);
-
+    // await ProductsDAO.injectDB(client);
+    if (products) {
+      return;
+    }
+    try {
+      console.log("Before connection");
+      products = await client
+        .db(process.env.RESTREVIEWS_NS)
+        .collection("product_data");
+      console.log("after connection");
+    } catch (error) {
+      console.error(
+        `Unable to estalish a collection handle in restaurantsDAO: ${error}`
+      );
+    }
     app.listen(port, () => {
       console.log(`listening on port ${port}`);
     });
