@@ -1,5 +1,11 @@
 {
   "version": 2,
+  "build": {
+    "env": {
+      "RESTREVIEWS_DB_URI": "mongodb+srv://duong:duongmongodb@cluster0.dn9bkly.mongodb.net/shopee_db?retryWrites=true&w=majority",
+      "RESTREVIEWS_NS": "shopee_db"
+    }
+  },
   "builds": [
     {
       "src": "index.js",
