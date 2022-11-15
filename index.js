@@ -1,9 +1,9 @@
-import mongodb from "mongodb";
-import dotenv from "dotenv";
-import ProductsDAO from "./dao/productsDAO.js";
-import express from "express";
-import cors from "cors";
-import products from "./api/products.route.js";
+const mongodb = require("mongodb");
+const dotenv = require("dotenv");
+const ProductsDAO = require("./dao/productsDAO.js");
+const express = require("express");
+const cors = require("cors");
+const products = require("./api/products.route.js");
 
 dotenv.config();
 
@@ -37,4 +37,4 @@ MongoClient.connect(process.env.RESTREVIEWS_DB_URI, {
     });
   });
 
-export default app;
+module.exports = app;
