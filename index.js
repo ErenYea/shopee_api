@@ -54,7 +54,7 @@ const getProducts = async ({ filters = null, page = 0, limit = 100 } = {}) => {
   }
 };
 
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 const app = express();
 
