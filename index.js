@@ -14,9 +14,11 @@ class ProductsDAO {
       return;
     }
     try {
+      console.log("Before connection");
       products = await conn
         .db(process.env.RESTREVIEWS_NS)
         .collection("product_data");
+      console.log("after connection");
     } catch (error) {
       console.error(
         `Unable to estalish a collection handle in restaurantsDAO: ${error}`
@@ -38,7 +40,9 @@ class ProductsDAO {
 
     let cursor;
     try {
+      console.log("query", query);
       cursor = await products.find(query);
+      console.log("cursor found");
     } catch (e) {
       console.error(`Unable to issue find command, ${e}`);
       return { productsList: [], totalNumProducts: 0 };
