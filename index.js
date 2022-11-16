@@ -1,60 +1,68 @@
 const mongodb = require("mongodb");
+const dotenv = require("dotenv");
 
 const express = require("express");
 const cors = require("cors");
 
+dotenv.config();
+
 const MongoClient = mongodb.MongoClient;
+
 
 let products;
 const injectDB = async (conn) => {
-  if (products) {
-    return;
-  }
-  try {
-    products = await conn.db("shopee_db").collection("product_data");
-  } catch (error) {
-    console.error(
-      `Unable to estalish a collection handle in restaurantsDAO: ${error}`
-    );
-  }
-};
-
-const getProducts = async ({ filters = null, page = 0, limit = 100 } = {}) => {
-  let query;
-  if (filters) {
-    if ("brand" in filters) {
-      query = { $text: { $search: filters["brand"] } };
-    } else if ("dest" in filters) {
-      query = { $text: { $search: `|${filters["dest"]}|` } };
-    } else if ("name" in filters) {
-      query = { $text: { $search: filters["name"] } };
+    if (products) {
+        return;
     }
-  }
+    try {
+        products = await conn.db('shopee_db').collection("product_data");
+    } catch (error) {
+        console.error(
+            `Unable to estalish a collection handle in restaurantsDAO: ${error}`
+        );
+    }
+}
 
-  let cursor;
-  try {
-    cursor = await products.find(query);
-  } catch (e) {
-    console.error(`Unable to issue find command, ${e}`);
-    return { productsList: [], totalNumProducts: 0 };
-  }
+const getProducts =  async ({ filters = null, page = 0, limit = 100 } = {}) => {
+    let query;
+    if (filters) {
+      if ("brand" in filters) {
+        query = { $text: { $search: filters["brand"] } };
+      } else if ("dest" in filters) {
+        query = { $text: { $search: `|${filters["dest"]}|` } };
+      } else if ("name" in filters) {
+        query = { $text: { $search: filters["name"] } };
+      } else if ("source" in filters) {
+        query = { $text: { $search: filters["source"] } };
+      }
+    }
 
-  const displayCursor = cursor.limit(limit).skip(limit * page);
+    let cursor;
+    try {
+      cursor = await products.find(query);
+    } catch (e) {
+      console.error(`Unable to issue find command, ${e}`);
+      return { productsList: [], totalNumProducts: 0 };
+    }
 
-  try {
-    const productsList = await displayCursor.toArray();
-    const totalNumProducts = await products.countDocuments(query);
+    const displayCursor = cursor.limit(limit).skip(limit * page);
 
-    return { productsList, totalNumProducts };
-  } catch (e) {
-    console.error(
-      `Unable to convert cursor to array or problem counting documents, ${e}`
-    );
-    return { productsList: [], totalNumProducts: 0 };
-  }
-};
+    try {
+      const productsList = await displayCursor.toArray();
+      const totalNumProducts = await products.countDocuments(query);
 
-const port = process.env.PORT || 5000;
+      return { productsList, totalNumProducts };
+    } catch (e) {
+      console.error(
+        `Unable to convert cursor to array or problem counting documents, ${e}`
+      );
+      return { productsList: [], totalNumProducts: 0 };
+    }
+}
+
+
+
+const port = 5000;
 
 const app = express();
 
@@ -72,8 +80,10 @@ app.use("/api/v1/products", async (req, res) => {
     filters.name = req.query.name;
   } else if (req.query.brand) {
     filters.brand = req.query.brand;
+  } else if (req.query.source) {
+    filters.source = req.query.source;
   }
-
+  
   const { productsList, totalNumProducts } = await getProducts({
     filters,
     page,
@@ -91,13 +101,11 @@ app.use("/api/v1/products", async (req, res) => {
 
 app.use("*", (req, res) => res.status(404).json({ error: "Not Found" }));
 
-MongoClient.connect(
-  "mongodb+srv://duong:duongmongodb@cluster0.dn9bkly.mongodb.net/shopee_db?retryWrites=true&w=majority",
-  {
-    maxPoolSize: 50,
-    wtimeoutMS: 2500,
-  }
-)
+MongoClient.connect('mongodb+srv://duong:duongmongodb@cluster0.dn9bkly.mongodb.net/shopee_db?retryWrites=true&w=majority', {
+  maxPoolSize: 50,
+  wtimeoutMS: 2500,
+  useNewUrlParser: true,
+})
   .catch((err) => {
     console.error(err.stack);
     process.exit(1);
